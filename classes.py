@@ -106,8 +106,21 @@ class LRU(BaseAlgorithm):
             self.stack.insert(0, page)
             return None, i
         else:
-            old_page = self.stack.pop()
+            old_page = None
+            for candidate in reversed(self.stack):
+                if candidate in frames:
+                    old_page = candidate
+                    break
+            
+            if old_page is None:
+                old_page = frames[0]
+                self.stack = [p for p in frames if p is not None]
+            
+            if old_page in self.stack:
+                self.stack.remove(old_page)
+            
             old_idx = frames.index(old_page)
+            
             frames[old_idx] = page
             self.stack.insert(0, page)
             return old_page, old_idx
