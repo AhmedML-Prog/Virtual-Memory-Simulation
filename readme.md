@@ -1,4 +1,4 @@
-# Virtual Memory Simulator (Python)
+# Virtual Memory Simulator (Python) by : joox
 
 ## Overview
 This project is a Python-based **Virtual Memory Simulator** that models paging, address translation, and demand paging as implemented in modern operating systems.
