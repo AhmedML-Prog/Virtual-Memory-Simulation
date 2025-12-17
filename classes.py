@@ -26,6 +26,7 @@ class TLB:
     def clear(self):
         self.entries = []
 
+
 class PageTable:
     def __init__(self):
         self.table = {}  # page: {frame, dirty}

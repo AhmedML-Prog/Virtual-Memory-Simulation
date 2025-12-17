@@ -682,10 +682,6 @@ class VirtualMemorySimulatorGUI:
         self.stop_btn.config(state=tk.DISABLED)
 
 
-# ============================================================================
-# MAIN
-# ============================================================================
-
 if __name__ == "__main__":
     root = tk.Tk()
     app = VirtualMemorySimulatorGUI(root)
