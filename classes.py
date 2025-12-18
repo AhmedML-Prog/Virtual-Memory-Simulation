@@ -129,6 +129,46 @@ class LRU(BaseAlgorithm):
         self.stack = []
 
 
+class Optimal(BaseAlgorithm):
+    def __init__(self, trace):
+        self.reference_string = [t[1] for t in trace]
+        self.current_step = 0
+
+    def hit(self, frames, page):
+        self.current_step += 1
+
+    def miss(self, frames, page):
+        victim_idx = -1
+        farthest_distance = -1
+        
+        empty = self.empty_slot(frames)
+        if empty != -1:
+            frames[empty] = page
+            self.current_step += 1
+            return None, empty
+
+        for i, frame_page in enumerate(frames):
+            try:
+                next_use = self.reference_string.index(frame_page, self.current_step + 1)
+                distance = next_use - self.current_step
+            except ValueError:
+                distance = float('inf')
+            
+            if distance > farthest_distance:
+                farthest_distance = distance
+                victim_idx = i
+                
+                if distance == float('inf'):
+                    break
+        
+        old_page = frames[victim_idx]
+        frames[victim_idx] = page
+        self.current_step += 1
+        return old_page, victim_idx
+
+    def reset(self):
+        self.current_step = 0
+
 class VirtualMemory:
     def __init__(self, num_frames, algorithm, tlb_size=4):
         self.num_frames = num_frames

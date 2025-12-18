@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
 import threading
 import time
-from classes import VirtualMemory, FIFO, LRU, read_trace_file
+from classes import VirtualMemory, FIFO, LRU, Optimal, read_trace_file
 
 class VirtualMemorySimulatorGUI:
     def __init__(self, root):
@@ -162,7 +162,7 @@ class VirtualMemorySimulatorGUI:
         algo_combo = ttk.Combobox(
             config_frame,
             textvariable=self.algorithm_var,
-            values=["FIFO", "LRU"],
+            values=["FIFO", "LRU", "Optimal"],
             font=("Arial", 12),
             width=23,
             state="readonly"
@@ -551,8 +551,10 @@ class VirtualMemorySimulatorGUI:
         algo_name = self.algorithm_var.get()
         if algo_name == "FIFO":
             algorithm = FIFO()
-        else:
+        elif algo_name == "LRU":
             algorithm = LRU(num_frames)
+        else: # Optimal
+            algorithm = Optimal(self.trace)
         
         # Create VM
         self.vm = VirtualMemory(num_frames, algorithm, tlb_size=4)
