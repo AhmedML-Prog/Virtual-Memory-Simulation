@@ -6,7 +6,7 @@ This project is a Python-based **Virtual Memory Simulator** that models paging, 
 The simulator supports:
 - Virtual-to-physical page translation
 - Demand paging with page fault handling
-- Page replacement algorithms (FIFO, LRU)
+- Page replacement algorithms (FIFO, LRU, Optimal)
 - Translation Lookaside Buffer (TLB) with hit/miss tracking
 - Read and write memory accesses with dirty bit management
 - Execution using realistic memory access traces from text files
