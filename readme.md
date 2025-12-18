@@ -14,12 +14,17 @@ The simulator supports:
 ---
 
 ## Features
+- **Logical to Physical Address Translation**
+  - Translates logical addresses to physical addresses using page size.
+  - Displays the translation mapping.
+
 - **Demand Paging**  
   Pages are loaded into physical memory only when accessed.
 
 - **Page Replacement Algorithms**
   - FIFO (First-In First-Out)
   - LRU (Least Recently Used)
+  - Optimal (Replace page that will not be used for longest time)
 
 - **Translation Lookaside Buffer (TLB)**
   - Caches recent page-to-frame translations
@@ -37,6 +42,7 @@ The simulator supports:
     R 49156
     W 49160
     ```
+  - Input addresses are treated as **Logical Addresses** and translated to Page Numbers and Physical Addresses.
 
 ---
 
@@ -60,6 +66,7 @@ The simulator supports:
 ### 4. Page Replacement Algorithms
 - **FIFO**: Evicts the oldest loaded page
 - **LRU**: Evicts the least recently used page
+- **Optimal**: Evicts the page that will not be used for the longest period of time
 
 ### 5. Virtual Memory Manager
 - Coordinates TLB, page table, frames, and replacement algorithms
