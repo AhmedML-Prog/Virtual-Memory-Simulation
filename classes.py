@@ -18,7 +18,7 @@ class TLB:
         # remove if already exists
         self.entries = [(p, f) for (p, f) in self.entries if p != page]
 
-        # remove the least recently used entry (end of list)
+        # remove the least recently used entry end of list
         if len(self.entries) >= self.size:
             self.entries.pop()
         self.entries.insert(0, (page, frame))
@@ -131,7 +131,8 @@ class LRU(BaseAlgorithm):
 
 class Optimal(BaseAlgorithm):
     def __init__(self, trace):
-        self.reference_string = [t[1] for t in trace]
+        # trace contains (op, logical_address), convert to pages for reference string
+        self.reference_string = [t[1] // PAGE_SIZE for t in trace]
         self.current_step = 0
 
     def hit(self, frames, page):
@@ -241,6 +242,11 @@ class VirtualMemory:
         self.hits = 0
 
 
+def translation(logical_address, frame_index):
+    offset = logical_address % PAGE_SIZE
+    return frame_index * PAGE_SIZE + offset
+
+
 def read_trace_file(filename):
     trace = []
     try:
@@ -255,14 +261,13 @@ def read_trace_file(filename):
                     op, addr = parts[0], parts[1]
                     try:
                         addr = int(addr)
-                        page = addr // PAGE_SIZE
-                        trace.append((op.upper(), page))
+                        trace.append((op.upper(), addr))
                     except ValueError:
                         continue
                 elif len(parts) == 1:
                     try:
-                        page = int(parts[0])
-                        trace.append(("R", page))
+                        val = int(parts[0])
+                        trace.append(("R", val))
                     except ValueError:
                         continue
     except FileNotFoundError:

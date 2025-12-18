@@ -2,7 +2,7 @@ import tkinter as tk
 from tkinter import ttk, filedialog, messagebox
 import threading
 import time
-from classes import VirtualMemory, FIFO, LRU, Optimal, read_trace_file
+from classes import VirtualMemory, FIFO, LRU, Optimal, read_trace_file, translation, PAGE_SIZE
 
 class VirtualMemorySimulatorGUI:
     def __init__(self, root):
@@ -489,13 +489,17 @@ class VirtualMemorySimulatorGUI:
         if filename:
             self.trace = read_trace_file(filename)
             if self.trace:
-                # Display page reference string
-                pages = [str(t[1]) for t in self.trace]
-                ref_str = " ".join(pages[:20])
-                if len(pages) > 20:
+                display_items = []
+                for t in self.trace:
+                    addr = t[1]
+                    page = addr // PAGE_SIZE
+                    display_items.append(f"{addr}(P{page})")
+                
+                ref_str = " ".join(display_items[:10])
+                if len(display_items) > 10:
                     ref_str += " ..."
                 self.ref_string_label.config(text=ref_str, fg="#98FB98")
-                self.log_message(f"Loaded {len(self.trace)} page references from file")
+                self.log_message(f"Loaded {len(self.trace)} memory references from file (Logical Addresses)")
             else:
                 self.ref_string_label.config(text="Error loading file", fg="#ff6b6b")
                 self.log_message("Error: Could not load trace file")
@@ -583,13 +587,14 @@ class VirtualMemorySimulatorGUI:
 
     def simulation_loop(self):
         while self.is_running and self.current_step < len(self.trace):
-            op, page = self.trace[self.current_step]
+            op, logical_address = self.trace[self.current_step]
+            page = logical_address // PAGE_SIZE
             
             # Access memory
             status, old_page, frame_idx, is_tlb_hit = self.vm.access(page, op)
             
             # Update UI (thread-safe)
-            self.root.after(0, self.update_step, page, status, old_page, frame_idx)
+            self.root.after(0, self.update_step, logical_address, page, status, old_page, frame_idx)
             
             self.current_step += 1
             time.sleep(self.speed_var.get())
@@ -597,21 +602,29 @@ class VirtualMemorySimulatorGUI:
         if self.is_running:
             self.root.after(0, self.simulation_complete)
 
-    def update_step(self, page, status, old_page, frame_idx):
+    def update_step(self, logical_address, page, status, old_page, frame_idx):
         is_fault = "FAULT" in status
         
         # Update status label
-        self.status_label.config(text=f"Current Reference: {page} | Status: {status}")
+        phys_addr_str = "?"
+        if frame_idx != -1 and frame_idx is not None:
+             phys_addr = translation(logical_address, frame_idx)
+             phys_addr_str = str(phys_addr)
+        
+        self.status_label.config(text=f"Log Addr: {logical_address} (Page {page}) | Phys Addr: {phys_addr_str} | Status: {status}")
         
         # Update frames display
         self.update_frames_display(self.vm.frames, frame_idx, is_fault)
         
         # Log message
         mem_str = str([f if f is not None else "-" for f in self.vm.frames])
+        
+        log_prefix = f"[{status}] LogAddr: {logical_address} -> PhysAddr: {phys_addr_str}"
+        
         if old_page is not None:
-            self.log_message(f"[{status}] Page {page} : Replace {old_page} with {page}. Memory: {mem_str}")
+            self.log_message(f"{log_prefix} | Replace Page {old_page} with Page {page}. Mem: {mem_str}")
         else:
-            self.log_message(f"[{status}] Page {page} : Insert: {page}. Memory: {mem_str}")
+            self.log_message(f"{log_prefix} | Insert Page {page}. Mem: {mem_str}")
         
         # Update chart
         self.draw_chart(self.vm.hits, self.vm.page_faults)
